@@ -1,0 +1,17 @@
+{
+  "name": "ig-push",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "await-timeout": "^0.3.0",
+    "hapi": "^18.1.0",
+    "lightstreamer-client": "^6.1.4",
+    "web-push": "^3.3.3"
+  }
+}
