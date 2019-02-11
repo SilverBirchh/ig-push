@@ -1,6 +1,7 @@
 class Database {
   static get(id) {
     console.log(`Searching for ${id}`);
+    console.log(Object.keys(Database.cache));
     return Database.cache[id];
   }
 
@@ -15,6 +16,7 @@ class Database {
       xst,
       lightstreamerEndpoint
     };
+    console.log(Object.keys(Database.cache));
   }
 
   static remove(id) {

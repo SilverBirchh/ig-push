@@ -52,7 +52,7 @@ class Rest {
         console.log(`No user found for ${id}`);
         await Timeout.set(5000);
         console.log(`Trying againg to find ${id}`);
-        let user = Database.get(id);
+        user = Database.get(id);
         retry++;
       }
 
