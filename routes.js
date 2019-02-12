@@ -19,6 +19,12 @@ const routes = restService => [
     config
   },
   {
+    path: "/priceAlert",
+    method: "POST",
+    handler: restService.createPriceAlert.bind(restService),
+    config
+  },
+  {
     path: "/updateSubscription/{id}",
     method: "PATCH",
     handler: restService.patch.bind(restService),

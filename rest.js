@@ -40,6 +40,33 @@ class Rest {
     }
   }
 
+  async createPriceAlert(request, reply) {
+    try {
+      const { id, type, level, epic, name, url } = JSON.parse(request.payload);
+      console.log('price alert', id, type, level, epic, name, url);
+      
+      let user = Database.get(id);
+      let retry = 0;
+
+      while (!user && retry < RETRY_COUNT) {
+        console.log(`No user found for ${id}`);
+        await Timeout.set(5000);
+        console.log(`Trying againg to find ${id}`);
+        user = Database.get(id);
+        retry++;
+      }
+
+      if (user) {
+        this.streaming.createPriceAlert(id, user.subscription, type, level, epic, name, url);
+        return reply.response().code(201);
+      } else {
+        return reply.response("User not found").code(404);
+      }
+    } catch (error) {
+      return reply.response(e).code(500);
+    }
+  }
+
   async createPositionsSubscription(request, reply) {
     try {
       const { id } = JSON.parse(request.payload);

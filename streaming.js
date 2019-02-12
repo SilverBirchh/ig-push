@@ -37,6 +37,59 @@ class Streaming {
     lsClient.connect();
     this.lsClients[id] = lsClient;
   }
+  createPriceAlert(id, pushData, type, level, epic, instrumentName, url) {
+    const lsClient = this.lsClients[id];
+    try {
+      const schema = type === 'sell' ? {
+        displayOffer: 'BD1'
+      } : {
+        displayBid: 'AK1'
+      }
+
+      const string = `V2-F-${Object.values(schema).join()}|${epic}`;
+      const subscription = new ls.Subscription(
+        "MERGE",
+        string,
+        Object.keys(schema)
+      );
+
+      subscription.addListener({
+        onSubscription: function() {
+          console.log("Subscribed to: " + items + ` ${id}`);
+        },
+
+        onUnsubscription: function() {
+          console.log("Unsubscribed" + ` ${id}`);
+        },
+
+        onSubscriptionError: (code, message) => {
+          console.log(
+            "Subscription failure: " + code + " message: " + message + ` ${id}`
+          );
+        },
+
+        onItemUpdate: itemUpdate => {
+          itemUpdate.forEachChangedField((name, pos, value) => {
+            if (name === Object.keys(schema)[0] && (Math.floor(parseFloat(value)) == Math.floor(parseFloat(level)))) {
+              const payload = JSON.stringify({
+                title: `Price alert`,
+                body: `${instrumentName} has hit ${level}`,
+                isAlert: true,
+                url
+              });
+              push.sendNotification(
+                pushData, payload
+              );
+              lsClient.unsubscribe(subscription);
+            }
+          })
+        }
+      });
+      lsClient.subscribe(subscription);
+    } catch (error) {
+      throw new Error("ERROR", id, e);
+    }
+  }
 
   createPositionsSubscription(id, pushData) {
     const lsClient = this.lsClients[id];
@@ -69,19 +122,30 @@ class Streaming {
           }
           if (opu.header.contentType === "OpenPositionUpdate") {
             console.log("update" + ` ${id}`);
-
+            
+            const payload = JSON.stringify({
+              title: `Position update`,
+              body: `Position update on ${opu.body.epic.instrumentName}`
+            });
             push.sendNotification(
-              pushData,
-              `Position update on ${opu.body.epic.instrumentName}`
+              pushData, payload
             );
           } else if (opu.header.contentType === "OpenPositionDelete") {
-            console.log("delete" + ` ${id}`);
-            push.sendNotification(pushData, `Position removed`);
+            // console.log("delete" + ` ${id}`);
+            // const payload = JSON.stringify({
+            //   title: `Position removed`,
+            // });
+            // push.sendNotification(
+            //   pushData, payload
+            // );
           } else if (opu.header.contentType === "OpenPositionAdd") {
             console.log("add" + ` ${id}`);
+            const payload = JSON.stringify({
+              title: `Position update`,
+              body: `Position created on ${opu.body.epic.instrumentName}`
+            });
             push.sendNotification(
-              pushData,
-              `Position created on ${opu.body.epic.instrumentName}`
+              pushData, payload
             );
           }
         }
